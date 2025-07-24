@@ -1,0 +1,1 @@
+The Python script "test_zenodo_api.py" currently takes a test text file, "test.txt" from the "in" directory, and uses the Zenodo API to upload to Zenodo sandbox enironment. A log file is output in the "out" directory. 
