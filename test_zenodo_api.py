@@ -13,6 +13,11 @@ def input_validation_check(csv_filename, access_token, deposition_url):
 		logging.error("Not able to find CSV file")
 		return False
 	
+	#validate able to get access code from env variables
+	if not access_token:
+		logging.error(f"Access token not found in environmental variables.")
+		return False
+
 	#validate access code allows connection to API
 	r = requests.get(deposition_url,
 		params={'access_token': access_token})
@@ -25,7 +30,7 @@ def input_validation_check(csv_filename, access_token, deposition_url):
 	return True
 
 #########################################
-#send POST request to API to create new empty upload
+#get metadata from CSV file
 def extract_metadata():
 	print("")
 
@@ -122,46 +127,52 @@ def add_metadata(access_token, deposition_url, deposition_id, metadata_params):
 		logging.error(f"Error adding metadata: {e}")
 
 
+##################################################################################
+############################## main code block ###################################
+##################################################################################
+def main():
 
+	#set up logging 
+	log_file_path = "out/log_file.txt"
+	logging.basicConfig(
+		level=logging.INFO, 
+		format='%(asctime)s - %(levelname)s - %(message)s', 
+		handlers=[logging.FileHandler(log_file_path), logging.StreamHandler()]
+		)
 
-#########################################
-############# main code block ###########
+	#load variables
+	access_token = os.getenv("ZENODO_SANDBOX_API_KEY")
+	csv_filename = "in/radx-up-asset-index.csv"
+	test_uploadfile = "in/test.txt"
+	deposition_url = "https://sandbox.zenodo.org/api/deposit/depositions"
 
-#set up logging 
-log_file_path = "out/log_file.txt"
-logging.basicConfig(
-	level=logging.INFO, 
-	format='%(asctime)s - %(levelname)s - %(message)s', 
-	handlers=[logging.FileHandler(log_file_path), logging.StreamHandler()]
-	)
+	try: 
+		if not input_validation_check(csv_filename, access_token, deposition_url):
+			raise Exception("Input validation failed.")
 
-#load local variables
-access_token = os.getenv("ZENODO_SANDBOX_API_KEY")
-csv_filename = "in/radx-up-asset-index.csv"
-test_uploadfile = "in/test.txt"
-deposition_url = "https://sandbox.zenodo.org/api/deposit/depositions"
-
-try: 
-	if not input_validation_check(csv_filename, access_token, deposition_url):
-		raise Exception("Input validation failed.")
-
-	#main loop. for each row in CSV, extract metadata, then create POST and PUT request to upload item
-	bucket_url, deposition_id = create_empty_upload(access_token, deposition_url)
-	if not bucket_url:
-		raise Exception("POST request to create empty upload failed.")
-
-	
-	if not upload_file(access_token, bucket_url, deposition_id, test_uploadfile):
-		raise Exception("PUT request to upload file failed.")
-
-	metadata_params = []	
-	
-	if not add_metadata(access_token, deposition_url, deposition_id, metadata_params):
-		raise Exception("PUT request to add metadata failed.")
+		#main loop. for each row in CSV, extract metadata, then create POST and PUT request to upload item
+		bucket_url, deposition_id = create_empty_upload(access_token, deposition_url)
+		if not bucket_url:
+			raise Exception("POST request to create empty upload failed.")
 
 		
+		if not upload_file(access_token, bucket_url, deposition_id, test_uploadfile):
+			raise Exception("PUT request to upload file failed.")
 
-except Exception as e:
-		logging.error(f"Error: {e}")
+		metadata_params = []	
+		
+		if not add_metadata(access_token, deposition_url, deposition_id, metadata_params):
+			raise Exception("PUT request to add metadata failed.")
+
+			
+
+	except Exception as e:
+			logging.error(f"Error: {e}")
+
+##################################################################################
+if __name__ == "__main__":
+	main()
+
+	
 
 
