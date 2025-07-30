@@ -138,3 +138,15 @@
 2025-07-30 16:11:16,875 - INFO - Empty deposition creation successful.
 2025-07-30 16:11:17,430 - ERROR - PUT request to upload file not successful. Status code: 500. Message: {'message': 'The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.', 'status': 500}
 2025-07-30 16:11:17,432 - ERROR - Error: PUT request to upload file failed for file: in/test.txt.
+2025-07-30 16:41:49,245 - INFO - Successful connection to API. Status code: 200
+2025-07-30 16:41:49,985 - INFO - Empty deposition creation successful.
+2025-07-30 16:41:50,573 - ERROR - PUT request to upload file not successful. Status code: 500. Message: {'message': 'The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.', 'status': 500}
+2025-07-30 16:41:50,574 - ERROR - Error: PUT request to upload file failed for file: in/test.txt.
+2025-07-30 16:48:20,643 - INFO - Successful connection to API. Status code: 200
+2025-07-30 16:48:21,352 - INFO - Empty deposition creation successful.
+2025-07-30 16:48:21,889 - ERROR - PUT request to upload file not successful. Status code: 500. Message: {'message': 'The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.', 'status': 500}
+2025-07-30 16:48:21,890 - ERROR - Error: PUT request to upload file failed for file: in/test.txt.
+2025-07-30 16:52:06,423 - INFO - Successful connection to API. Status code: 200
+2025-07-30 16:52:07,122 - INFO - Empty deposition creation successful.
+2025-07-30 16:52:07,666 - ERROR - PUT request to upload file not successful. Status code: 500. Message: {'message': 'The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.', 'status': 500}
+2025-07-30 16:52:07,667 - ERROR - Error: PUT request to upload file failed for file: in/backup_txt.txt.

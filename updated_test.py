@@ -176,7 +176,7 @@ if __name__ == "__main__":
 	#load global variables
 	load_dotenv()
 	access_token = os.getenv("ZENODO_SANDBOX_API_KEY") #get access token from .env file
-	csv_file = "in/updated_test.csv"
+	csv_file = "in/backup_csv.csv"
 	deposition_url = "https://sandbox.zenodo.org/api/deposit/depositions"
 	failed_files = []
 	community_id = "aw_test"
@@ -202,8 +202,10 @@ if __name__ == "__main__":
 				failed_files.append(file_to_upload)
 				raise Exception(f"POST request to create empty upload failed for file: {file_to_upload}")
 			
-			if not upload_file.upload_file(bucket_url):
+			if not upload_file.upload_file(
+				bucket_url):
 				failed_files.append(file_to_upload)
+				print("")
 				raise Exception(f"PUT request to upload file failed for file: {file_to_upload}.")
 
 			if not upload_file.add_metadata(deposition_id):
