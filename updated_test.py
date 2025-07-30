@@ -223,7 +223,6 @@ if __name__ == "__main__":
 		failed_dict = {"files": failed_files}
 		df = pd.DataFrame(failed_dict)
 		df.to_csv("./out/failed_files.csv", index=False)
-
 	except Exception as e:
 			logging.error(f"Error: {e}")
 
