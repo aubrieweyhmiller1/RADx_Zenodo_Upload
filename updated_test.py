@@ -1,6 +1,7 @@
 import requests 
 import logging 
 import os
+from dotenv import load_dotenv
 import json
 import pandas as pd
 
@@ -53,7 +54,6 @@ class Upload:
 	def __str__(self):
 		return(f"Upload object fileaname: {self.file_to_upload}, metadata: {self.metadata_params}")
 
-
 	#########################################
 	#send POST request to API to create new empty upload
 	def create_empty_upload(self):
@@ -87,7 +87,6 @@ class Upload:
 	#create PUT request to populate empty upload with file
 	def upload_file(self, bucket_url):
 		try:
-			
 			''' 
 			The target URL is a combination of the bucket link with the desired filename
 			seperated by a slash.
@@ -124,7 +123,7 @@ class Upload:
 			         'description': row["Description"],
 			         'creators': [{'name': row["Creator"]
 			                    }],
-					 'keywords': row["Keywords"].split(",") + [row["RADx_Program"]] #appends RADx program to keywords list
+					 'keywords': [row["Keywords"]] #appends RADx program to keywords list
 			    			}
 					}
 
@@ -145,6 +144,22 @@ class Upload:
 		except Exception as e:
 			logging.error(f"Error adding metadata: {e}")
 
+	def add_to_community(self):
+		try:
+			print(deposition_url + '/%s' % deposition_id + '/communities/' + community_id)
+			r = requests.post(deposition_url + '/%s' % deposition_id + '/communities/' + community_id)
+
+			if check_statuscode(r.status_code):
+				logging.info(f"POST request to add to community successful. Status code: {r.status_code}")
+				logging.info(f"POST request response {r.json()}")
+				return True
+			else:
+				logging.error(f"POST request to add to community failed. Status code: {r.status_code}. Message: {r.json()}")
+				return False
+			
+		except Exception as e:
+			logging.error(f"Error adding metadata: {e}")
+
 ##################################################################################
 ############################## main code block ###################################
 ##################################################################################
@@ -159,10 +174,12 @@ if __name__ == "__main__":
 		)
 
 	#load global variables
-	access_token = os.getenv("ZENODO_SANDBOX_API_KEY")
-	csv_file = "in/test.csv"
-	df = pd.read_csv(csv_file)
+	load_dotenv()
+	access_token = os.getenv("ZENODO_SANDBOX_API_KEY") #get access token from .env file
+	csv_file = "in/updated_test.csv"
 	deposition_url = "https://sandbox.zenodo.org/api/deposit/depositions"
+	failed_files = []
+	community_id = "aw_test"
 
 	headers = {"Content-Type": "application/json"}
 	params = {"access_token": access_token}
@@ -171,7 +188,8 @@ if __name__ == "__main__":
 	try: 
 		if not input_validation_check(csv_file, access_token, deposition_url):
 			raise Exception("Input validation failed.")
-
+		
+		df = pd.read_csv(csv_file)
 		for index, row in df.iterrows():
 			#extract metadata from each row
 			metadata_params = row.to_dict()
@@ -181,13 +199,28 @@ if __name__ == "__main__":
 
 			bucket_url, deposition_id = upload_file.create_empty_upload()
 			if not bucket_url:
-				raise Exception("POST request to create empty upload failed.")
+				failed_files.append(file_to_upload)
+				raise Exception(f"POST request to create empty upload failed for file: {file_to_upload}")
 			
 			if not upload_file.upload_file(bucket_url):
-				raise Exception("PUT request to upload file failed.")
+				failed_files.append(file_to_upload)
+				raise Exception(f"PUT request to upload file failed for file: {file_to_upload}.")
 
 			if not upload_file.add_metadata(deposition_id):
-				raise Exception("PUT request to add metadata failed.")
+				failed_files.append(file_to_upload)
+				raise Exception(f"PUT request to add metadata failed for file: {file_to_upload}")
+			
+			if not upload_file.add_to_community(deposition_id, community_id):
+				failed_files.append(file_to_upload)
+				raise Exception(f"PUT request to add metadata failed for file: {file_to_upload}")
+			
+			# actually publish
+
+		#create csv file with list of failed_csvs
+		print(f"FAILED FILES:", failed_files)
+		failed_dict = {"files": failed_files}
+		df = pd.DataFrame(failed_dict)
+		df.to_csv("./out/failed_files.csv", index=False)
 
 	except Exception as e:
 			logging.error(f"Error: {e}")
